@@ -1,28 +1,17 @@
-from fastapi import FastAPI, Depends
-from typing import Annotated
-from fastapi.responses import FileResponse
-from models import Login
+from fastapi import FastAPI
+from database  import create_table, delete_table
+from contextlib import asynccontextmanager
+from router import router as user_router
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await delete_table()
+    print("Base is clean up")
+    await create_table()
+    print("Base is ready")
+    yield
+    print("Off")
 
-@app.get("/login", tags=["Sign up"], response_class=FileResponse)
-def sign_up_page():
-    return FileResponse("login.html")
-
-
-@app.get("/tic_tac")
-def tic_tac():
-    return FileResponse("tic_tac_tac_toe.html")
-
-users = []
-
-@app.post("/login", tags=["Sign up"])
-async def set_data(login: Annotated[Login, Depends()]):
-    users.append(login)
-    #тут потом добавить чтобы шло в database
-    return {"ok": True}
-
-@app.get("/users")
-async def get_users():
-    return {"data": users}
+app = FastAPI(lifespan=lifespan)
+app.include_router(user_router)
 
