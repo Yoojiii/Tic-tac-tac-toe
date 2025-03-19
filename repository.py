@@ -1,5 +1,5 @@
 from sqlalchemy import select
-from schemas import User, UserAdd
+from schemas import User, UserAdd, UserAuthx
 from database import new_session, UsersOrm
 from pydantic import EmailStr
 
@@ -32,3 +32,11 @@ class UsersRepository:
                 await session.commit()
                 return user.id
         return -1
+
+    @classmethod
+    async def authx(cls, data: UserAuthx) -> bool:
+        async with new_session() as session:
+            query = select(UsersOrm).filter(UsersOrm.email == data.email, UsersOrm.password == data.password)
+            result = await session.execute(query)
+            user_model = result.scalars().first()
+            return user_model is not None
