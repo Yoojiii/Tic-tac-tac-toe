@@ -2,6 +2,8 @@ from sqlalchemy import select
 from schemas import User, UserAdd, UserAuthx
 from database import new_session, UsersOrm
 from pydantic import EmailStr
+from authx_ import security, conf
+from fastapi import Response
 
 class UsersRepository:
     @classmethod
@@ -22,7 +24,7 @@ class UsersRepository:
             return user_model is None
 
     @classmethod
-    async def add_one(cls, data: UserAdd) -> int:
+    async def add_one(cls, data: UserAdd, response: Response) -> int:
         if await UsersRepository.is_uniq(data.email):
             async with new_session() as session:
                 user_dict = data.model_dump()
@@ -30,6 +32,8 @@ class UsersRepository:
                 session.add(user)
                 await session.flush()
                 await session.commit()
+                token = security.create_access_token(uid=str(user.id))
+                response.set_cookie(conf.JWT_ACCESS_COOKIE_NAME, token)
                 return user.id
         return -1
 

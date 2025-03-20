@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from database  import create_table, delete_table
+from database import create_table, delete_table
 from contextlib import asynccontextmanager
 from router import router as user_router
 
