@@ -1,6 +1,5 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from pydantic import EmailStr
 
 engine = create_async_engine('sqlite+aiosqlite:///users.db')
 
@@ -15,11 +14,11 @@ class UsersOrm(Model):
     password: Mapped[str]
     email: Mapped[str]
 
-async def create_table():
+async def create_user_table():
     async with engine.begin() as conn:
         await conn.run_sync(Model.metadata.create_all)
 
-async def delete_table():
+async def delete_user_table():
     async with engine.begin() as conn:
         await conn.run_sync(Model.metadata.drop_all)
 

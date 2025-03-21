@@ -1,10 +1,10 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Response
-from schemas import UserAdd, User, UserAuthx
-from repository import UsersRepository
-from authx_ import security
+from .schemas import UserAdd, User, UserAuthx
+from .repository import UsersRepository
+from .authx_ import security
 
-router = APIRouter(tags=["Users"])
+router = APIRouter(tags=["User"])
 
 @router.post("/users/add")
 async def user_add(user: Annotated[UserAdd, Depends()], response: Response):

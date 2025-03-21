@@ -1,8 +1,8 @@
 from sqlalchemy import select
-from schemas import User, UserAdd, UserAuthx
-from database import new_session, UsersOrm
+from .schemas import User, UserAdd, UserAuthx
+from .database import new_session, UsersOrm
 from pydantic import EmailStr
-from authx_ import security, conf
+from .authx_ import security, conf
 from fastapi import Response
 
 class UsersRepository:
