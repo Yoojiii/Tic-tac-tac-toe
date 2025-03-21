@@ -1,8 +1,9 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, Cookie
 from schemas import UserAdd, User, UserAuthx
 from repository import UsersRepository
 from authx_ import security
+from authx import RequestToken
 
 router = APIRouter(tags=["Users"])
 
@@ -23,6 +24,10 @@ async def user_authx(user: Annotated[UserAuthx, Depends()]):
     raise HTTPException(status_code=409, detail="User isn't exists!")
 
 
-@router.get("/protected", dependencies=[Depends(security.access_token_required)])
-def protected():
-    return {"data": "top secret info"}
+@router.get("/protected", dependencies=[Depends(security.get_token_from_request)])
+def protected(token: RequestToken = Depends()):
+    try:
+        security.verify_token(token=token)
+        return {"data": "top secret info"}
+    except Exception as e:
+        raise HTTPException(401,detail={"message":str(e)}) from e
