@@ -1,34 +1,35 @@
 from sqlalchemy import select
-from schemas import User, UserAdd, UserAuthx
-from database import new_session, UsersOrm
+from database.schemas.user_schema import UserBaseSchema, UserSchema, UserIdSchema
+from database.models.user_model import UserOrm
+from database.models.base_model import new_session
 from pydantic import EmailStr
-from authx_ import security, conf
+from config.authx_ import security, conf
 from fastapi import Response
 
 class UsersRepository:
     @classmethod
-    async def find_all(cls) -> list[User]:
+    async def find_all(cls) -> list[UserIdSchema]:
         async with new_session() as session:
-            query = select(UsersOrm)
+            query = select(UserOrm)
             result = await session.execute(query)
             users_models = result.scalars().all()
-            users_schemas = [User.from_orm(users_model) for users_model in users_models]
+            users_schemas = [UserIdSchema.from_orm(users_model) for users_model in users_models]
             return users_schemas
 
     @classmethod
     async def is_uniq(cls, email: EmailStr) -> bool:
         async with new_session() as session:
-            query = select(UsersOrm).filter(UsersOrm.email == email)
+            query = select(UserOrm).filter(UserOrm.email == email)
             result = await session.execute(query)
             user_model = result.scalars().first()
             return user_model is None
 
     @classmethod
-    async def add_one(cls, data: UserAdd, response: Response) -> int:
+    async def add_one(cls, data: UserSchema, response: Response) -> int:
         if await UsersRepository.is_uniq(data.email):
             async with new_session() as session:
                 user_dict = data.model_dump()
-                user = UsersOrm(**user_dict)
+                user = UserOrm(**user_dict)
                 session.add(user)
                 await session.flush()
                 await session.commit()
@@ -38,9 +39,9 @@ class UsersRepository:
         return -1
 
     @classmethod
-    async def authx(cls, data: UserAuthx) -> bool:
+    async def authx(cls, data: UserBaseSchema) -> bool:
         async with new_session() as session:
-            query = select(UsersOrm).filter(UsersOrm.email == data.email, UsersOrm.password == data.password)
+            query = select(UserOrm).filter(UserOrm.email == data.email, UserOrm.password == data.password)
             result = await session.execute(query)
             user_model = result.scalars().first()
             return user_model is not None

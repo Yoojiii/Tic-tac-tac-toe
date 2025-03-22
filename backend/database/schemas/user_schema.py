@@ -1,13 +1,12 @@
 from pydantic import BaseModel, EmailStr, Field
-class UserAuthx(BaseModel):
+class UserBaseSchema(BaseModel):
     email: EmailStr
     password: str = Field(min_length=4)
 
-class UserAdd(UserAuthx):
+class UserSchema(UserBaseSchema):
     nickname: str = Field(max_length=20)
 
-class User(UserAdd):
+class UserIdSchema(UserSchema):
     id: int
     class Config:
         from_attributes = True
-
